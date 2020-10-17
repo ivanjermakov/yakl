@@ -74,7 +74,7 @@ def multi_bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legen
 def bar_plot(ax, data):
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     ax.bar(data.keys(), data.values(), color=colors)
-    ax.set_xticklabels(data.keys(), rotation=90)
+    plt.xticks(rotation=90)
 
 
 def compare_layouts(property_map, title):
