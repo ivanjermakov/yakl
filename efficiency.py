@@ -24,6 +24,57 @@ FINGER_MAP: List[int] = [
 ]
 
 
+class StepPenalty:
+    distance: float
+    finger: float
+    keys: float
+    hand: float
+    pinky: float
+
+    def __init__(self, distance: float, finger: float, keys: float, hand: float, pinky: float) -> None:
+        self.distance = distance
+        self.finger = finger
+        self.keys = keys
+        self.hand = hand
+        self.pinky = pinky
+
+
+class TextPenalty:
+    distance: float
+    finger: float
+    keys: float
+    hand: float
+    pinky: float
+
+    def __init__(self, stepPenalties: List[StepPenalty]) -> None:
+        self.distance = sum(map(lambda s: s.distance, stepPenalties)) / len(stepPenalties)
+        self.finger = sum(map(lambda s: s.finger, stepPenalties)) / len(stepPenalties)
+        self.keys = sum(map(lambda s: s.keys, stepPenalties)) / len(stepPenalties)
+        self.hand = sum(map(lambda s: s.hand, stepPenalties)) / len(stepPenalties)
+        self.pinky = sum(map(lambda s: s.pinky, stepPenalties)) / len(stepPenalties)
+
+    def __repr__(self) -> str:
+        return f'[' \
+               f'\n\tdistance: {self.distance}' \
+               f'\n\tfinger: {self.finger}' \
+               f'\n\tkeys: {self.keys}' \
+               f'\n\thand: {self.hand}' \
+               f'\n\tpinky: {self.pinky}' \
+               f'\n]'
+
+    def as_list(self) -> List[float]:
+        return [
+            self.distance,
+            self.finger,
+            self.keys,
+            self.hand,
+            self.pinky
+        ]
+
+    def sum(self) -> float:
+        return sum(self.as_list())
+
+
 def index_to_pos(index: int) -> (int, int):
     return int(index / LAYOUT_SIZE[1]), index % LAYOUT_SIZE[1]
 
@@ -69,36 +120,40 @@ def pinky_usage_penalty(layout: List[str], letter: str) -> float:
     return 1 if col == 0 or col == 9 else 0
 
 
-def calculate_step(layout: List[str], prev_letter: str, current_letter: str) -> float:
+def calculate_step(layout: List[str], prev_letter: str, current_letter: str) -> StepPenalty:
     distance_penalty = FINGER_TRAVEL_DISTANCE_WEIGHT * finger_travel_distance_penalty(layout, current_letter)
     hand_penalty = DOMINANT_HAND_WEIGHT * dominant_hand_penalty(layout, current_letter)
     pinky_penalty = PINKY_USAGE_WEIGHT * pinky_usage_penalty(layout, current_letter)
     if not prev_letter:
-        return sum([
+        return StepPenalty(
             distance_penalty,
+            0,
+            0,
             hand_penalty,
             pinky_penalty
-        ])
+        )
     finger_penalty = CONSECUTIVE_FINGER_WEIGHT * consecutive_finger_penalty(layout, prev_letter, current_letter)
     keys_penalty = CONSECUTIVE_HAND_WEIGHT * consecutive_hand_penalty(layout, prev_letter, current_letter)
-    return sum([
+    return StepPenalty(
         distance_penalty,
         finger_penalty,
         keys_penalty,
         hand_penalty,
         pinky_penalty
-    ])
+    )
 
 
-def calculate(layout: List[str], text: str) -> float:
+def calculate(layout: List[str], text: str) -> TextPenalty:
     text = t.prepare_text(text)
-    sum = 0
+    stepPenalties: List[StepPenalty] = []
     for i in range(len(text)):
-        sum += calculate_step(
-            layout,
-            None if i == 0 else text[i - 1], text[i]
+        stepPenalties.append(
+            calculate_step(
+                layout,
+                None if i == 0 else text[i - 1], text[i]
+            )
         )
-    return sum / len(text)
+    return TextPenalty(stepPenalties)
 
 
-print(calculate(layouts.qwerty, t.load_text(t.TEXT_PATH)))
+print(calculate(layouts.dvorak, t.load_text(t.TEXT_PATH)))
