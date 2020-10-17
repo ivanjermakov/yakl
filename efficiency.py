@@ -1,6 +1,5 @@
 from typing import List
 
-import layouts
 import text as t
 
 FINGER_TRAVEL_DISTANCE_WEIGHT = .4
@@ -154,6 +153,3 @@ def calculate(layout: List[str], text: str) -> TextPenalty:
             )
         )
     return TextPenalty(stepPenalties)
-
-
-print(calculate(layouts.dvorak, t.load_text(t.TEXT_PATH)))

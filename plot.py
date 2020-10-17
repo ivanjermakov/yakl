@@ -1,5 +1,9 @@
 from matplotlib import pyplot as plt
 
+import text as t
+from efficiency import calculate
+from layouts import *
+
 
 def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True):
     """Draws a bar plot with multiple bars per data point.
@@ -65,3 +69,23 @@ def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True
     # Draw legend if we need
     if legend:
         ax.legend(bars, data.keys())
+
+
+def compare_layouts(property_map, label):
+    layouts = {
+        "qwerty": qwerty,
+        "dvorak": dvorak,
+        "colemak": colemak,
+        "halmak": halmak,
+        "workman": workman,
+        "minimak 4-key": minimak_4_key,
+    }
+
+    layoutsPenalties = list(map(lambda l: calculate(l, t.load_text(t.TEXT_PATH)), layouts.values()))
+
+    data = dict(zip(layouts.keys(), map(lambda l: [property_map(l)], layoutsPenalties)))
+
+    fig, ax = plt.subplots()
+    bar_plot(ax, data, total_width=.8, single_width=.9)
+    plt.xticks(range(1), [label])
+    plt.show()
