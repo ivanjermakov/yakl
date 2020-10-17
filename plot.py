@@ -5,7 +5,7 @@ from efficiency import calculate
 from layouts import *
 
 
-def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True):
+def multi_bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True):
     """Draws a bar plot with multiple bars per data point.
 
     Parameters
@@ -71,21 +71,30 @@ def bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True
         ax.legend(bars, data.keys())
 
 
-def compare_layouts(property_map, label):
+def bar_plot(ax, data):
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    ax.bar(data.keys(), data.values(), color=colors)
+    ax.set_xticklabels(data.keys(), rotation=90)
+
+
+def compare_layouts(property_map, title):
     layouts = {
         "qwerty": qwerty,
+        "row swap (qwdfgy)": row_swap_qwdfgy,
         "dvorak": dvorak,
         "colemak": colemak,
+        "colemak dh mod": colemak_dh,
         "halmak": halmak,
         "workman": workman,
         "minimak 4-key": minimak_4_key,
+        "norman": norman,
     }
 
     layoutsPenalties = list(map(lambda l: calculate(l, t.load_text(t.TEXT_PATH)), layouts.values()))
 
-    data = dict(zip(layouts.keys(), map(lambda l: [property_map(l)], layoutsPenalties)))
+    data = dict(zip(layouts.keys(), map(lambda l: property_map(l), layoutsPenalties)))
 
     fig, ax = plt.subplots()
-    bar_plot(ax, data, total_width=.8, single_width=.9)
-    plt.xticks(range(1), [label])
+    bar_plot(ax, data)
+    ax.set_title(title)
     plt.show()
