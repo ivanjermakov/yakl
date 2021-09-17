@@ -1,17 +1,23 @@
+import csv
 import functools
-import re
 from collections import Counter
 
-TEXT_PATH = 'text.txt'
+TEXT_PATH = 'sample/sample.txt'
+BIGRAM_PATH = 'sample/bigrams.csv'
 
 
-def load_text(path: str) -> str:
-    with open(path) as text:
+def load_text() -> str:
+    with open(TEXT_PATH) as text:
         return text.read()
 
 
-def prepare_text(text: str) -> str:
-    return ''.join(re.findall(r'[a-zA-Z.,]', text)).lower()
+def load_bigram_frequency() -> list[tuple[str, float]]:
+    bigrams = []
+    with open(BIGRAM_PATH) as csv_file:
+        for i, row in enumerate(csv.reader(csv_file)):
+            if i == 0: continue
+            bigrams.append((row[0] + row[1], float(row[2])))
+    return bigrams[1:]
 
 
 def count_letter_frequency(text: str) -> list:

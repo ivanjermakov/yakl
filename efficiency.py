@@ -1,6 +1,6 @@
 from typing import List
 
-import text as t
+SPACE = ' '
 
 FINGER_TRAVEL_DISTANCE_WEIGHT = .4
 CONSECUTIVE_FINGER_WEIGHT = .1
@@ -12,7 +12,7 @@ LAYOUT_SIZE: (int, int) = (4, 10)
 
 DISTANCE_MAP: List[float] = [
     .3, .3, .3, .3, .7, .7, .3, .3, .3, .3,
-    .0, .0, .0, .0, 0., 0., .5, .0, .0, .0,
+    .0, .0, .0, .0, .5, .5, .0, .0, .0, .0,
     .5, .5, .5, .5, 1., 1., .5, .5, .5, .5
 ]
 
@@ -36,6 +36,10 @@ class StepPenalty:
         self.keys = keys
         self.hand = hand
         self.pinky = pinky
+
+    @classmethod
+    def zero(cls):
+        return StepPenalty(0, 0, 0, 0, 0)
 
 
 class TextPenalty:
@@ -120,36 +124,41 @@ def pinky_usage_penalty(layout: List[str], letter: str) -> float:
 
 
 def calculate_step(layout: List[str], prev_letter: str, current_letter: str) -> StepPenalty:
-    distance_penalty = FINGER_TRAVEL_DISTANCE_WEIGHT * finger_travel_distance_penalty(layout, current_letter)
-    hand_penalty = DOMINANT_HAND_WEIGHT * dominant_hand_penalty(layout, current_letter)
-    pinky_penalty = PINKY_USAGE_WEIGHT * pinky_usage_penalty(layout, current_letter)
-    if not prev_letter:
+    if current_letter == SPACE:
+        return StepPenalty.zero()
+
+    travel_distance_p_w = FINGER_TRAVEL_DISTANCE_WEIGHT * finger_travel_distance_penalty(layout, current_letter)
+    dominant_hand_p_w = DOMINANT_HAND_WEIGHT * dominant_hand_penalty(layout, current_letter)
+    pinky_usage_p_w = PINKY_USAGE_WEIGHT * pinky_usage_penalty(layout, current_letter)
+
+    if not prev_letter or prev_letter == SPACE:
         return StepPenalty(
-            distance_penalty,
+            travel_distance_p_w,
             0,
             0,
-            hand_penalty,
-            pinky_penalty
+            dominant_hand_p_w,
+            pinky_usage_p_w
         )
-    finger_penalty = CONSECUTIVE_FINGER_WEIGHT * consecutive_finger_penalty(layout, prev_letter, current_letter)
-    keys_penalty = CONSECUTIVE_HAND_WEIGHT * consecutive_hand_penalty(layout, prev_letter, current_letter)
+
+    consecutive_finger_p_w = CONSECUTIVE_FINGER_WEIGHT * consecutive_finger_penalty(layout, prev_letter, current_letter)
+    consecutive_hand_p_w = CONSECUTIVE_HAND_WEIGHT * consecutive_hand_penalty(layout, prev_letter, current_letter)
+
     return StepPenalty(
-        distance_penalty,
-        finger_penalty,
-        keys_penalty,
-        hand_penalty,
-        pinky_penalty
+        travel_distance_p_w,
+        consecutive_finger_p_w,
+        consecutive_hand_p_w,
+        dominant_hand_p_w,
+        pinky_usage_p_w
     )
 
 
 def calculate(layout: List[str], text: str) -> TextPenalty:
-    text = t.prepare_text(text)
-    stepPenalties: List[StepPenalty] = []
+    step_penalties: List[StepPenalty] = []
     for i in range(len(text)):
-        stepPenalties.append(
+        step_penalties.append(
             calculate_step(
                 layout,
                 None if i == 0 else text[i - 1], text[i]
             )
         )
-    return TextPenalty(stepPenalties)
+    return TextPenalty(step_penalties)

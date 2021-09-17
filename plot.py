@@ -5,15 +5,15 @@ from efficiency import calculate
 from layouts import *
 
 layouts = {
+    "halmak": halmak,
     "qgmlwy": qgmlwy,
     "dvorak": dvorak,
-    "colemak": colemak,
-    "halmak": halmak,
-    "workman": workman,
     "colemak dh mod": colemak_dh,
+    "colemak": colemak,
+    "workman": workman,
     "norman": norman,
-    "row swap (qwdfgy)": row_swap_qwdfgy,
     "minimak 4-key": minimak_4_key,
+    "row swap (qwdfgy)": row_swap_qwdfgy,
     "qwerty": qwerty,
 }
 
@@ -101,5 +101,5 @@ def compare_layouts(property_map, title, normalize=True):
 
 
 def get_scores(property_map):
-    layouts_penalties = list(map(lambda l: calculate(l, t.load_text(t.TEXT_PATH)), layouts.values()))
+    layouts_penalties = list(map(lambda l: calculate(l, t.load_text()), layouts.values()))
     return dict(zip(layouts.keys(), map(lambda l: property_map(l), layouts_penalties)))
