@@ -4,6 +4,19 @@ import text as t
 from efficiency import calculate
 from layouts import *
 
+layouts = {
+    "qgmlwy": qgmlwy,
+    "dvorak": dvorak,
+    "colemak": colemak,
+    "halmak": halmak,
+    "workman": workman,
+    "colemak dh mod": colemak_dh,
+    "norman": norman,
+    "row swap (qwdfgy)": row_swap_qwdfgy,
+    "minimak 4-key": minimak_4_key,
+    "qwerty": qwerty,
+}
+
 
 def multi_bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legend=True):
     """Draws a bar plot with multiple bars per data point.
@@ -68,33 +81,25 @@ def multi_bar_plot(ax, data, colors=None, total_width=0.8, single_width=1, legen
 
     # Draw legend if we need
     if legend:
-        ax.legend(bars, data.keys())
+        ax.legend(data.keys(), bars)
 
 
-def bar_plot(ax, data):
+def bar_plot(ax, data, normalize):
     colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
     ax.bar(data.keys(), data.values(), color=colors)
+    if normalize:
+        min_value = min(data.values())
+        ax.set_ylim(bottom=0.9 * min_value)
     plt.xticks(rotation=90)
 
 
-def compare_layouts(property_map, title):
-    layouts = {
-        "qwerty": qwerty,
-        "row swap (qwdfgy)": row_swap_qwdfgy,
-        "dvorak": dvorak,
-        "colemak": colemak,
-        "colemak dh mod": colemak_dh,
-        "halmak": halmak,
-        "workman": workman,
-        "minimak 4-key": minimak_4_key,
-        "norman": norman,
-    }
-
-    layoutsPenalties = list(map(lambda l: calculate(l, t.load_text(t.TEXT_PATH)), layouts.values()))
-
-    data = dict(zip(layouts.keys(), map(lambda l: property_map(l), layoutsPenalties)))
-
+def compare_layouts(property_map, title, normalize=True):
     fig, ax = plt.subplots()
-    bar_plot(ax, data)
+    bar_plot(ax, get_scores(property_map), normalize)
     ax.set_title(title)
     plt.show()
+
+
+def get_scores(property_map):
+    layouts_penalties = list(map(lambda l: calculate(l, t.load_text(t.TEXT_PATH)), layouts.values()))
+    return dict(zip(layouts.keys(), map(lambda l: property_map(l), layouts_penalties)))

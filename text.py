@@ -11,7 +11,7 @@ def load_text(path: str) -> str:
 
 
 def prepare_text(text: str) -> str:
-    return ''.join(re.findall(r'[a-zA-Z]', text)).lower()
+    return ''.join(re.findall(r'[a-zA-Z.,]', text)).lower()
 
 
 def count_letter_frequency(text: str) -> list:
