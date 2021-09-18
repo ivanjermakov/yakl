@@ -15,7 +15,7 @@ def generate_layout() -> List[str]:
 
 
 def mutate_layout(layout: List[str], permutations: int) -> List[str]:
-    permutations_even = permutations if permutations % 2 == 0 else permutations + 1
+    permutations_even = int(permutations if permutations % 2 == 0 else permutations + 1)
     positions = random.sample(range(0, 30), permutations_even)
     for i in range(permutations_even // 2):
         layout = swap_positions(layout, positions[2 * i], positions[2 * i + 1])
@@ -45,7 +45,7 @@ def search(parent, depth, width, current_depth=0, min_penalty=1) -> List[str]:
         return parent
     optimal = []
     for i in range(width):
-        layout = mutate_layout(parent, (depth - current_depth) * 3)
+        layout = mutate_layout(parent, (depth - current_depth) * len(ALPHABET) / depth)
         total_penalty = calculate_bigrams(layout, bigrams).sum()
         if total_penalty < min_penalty:
             optimal = layout
@@ -56,6 +56,6 @@ def search(parent, depth, width, current_depth=0, min_penalty=1) -> List[str]:
 
 bigrams = load_bigram_frequency()
 
-layout = search(generate_layout(), 10, 10000)
+layout = search(generate_layout(), 20, 10000)
 print(format_layout(layout))
 print(calculate_bigrams(layout, bigrams))

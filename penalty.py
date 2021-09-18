@@ -6,11 +6,11 @@ from TextPenaly import TotalPenalty
 
 SPACE = ' '
 
-FINGER_TRAVEL_DISTANCE_WEIGHT = .4
-CONSECUTIVE_FINGER_WEIGHT = .1
-CONSECUTIVE_HAND_WEIGHT = .1
-DOMINANT_HAND_WEIGHT = .1
-PINKY_USAGE_WEIGHT = .1
+FINGER_TRAVEL_DISTANCE_W = 20
+CONSECUTIVE_FINGER_W = 50
+CONSECUTIVE_HAND_W = 4
+DOMINANT_HAND_W = .5
+TW = sum([FINGER_TRAVEL_DISTANCE_W, CONSECUTIVE_FINGER_W, CONSECUTIVE_HAND_W, DOMINANT_HAND_W])
 
 LAYOUT_SIZE: (int, int) = (4, 10)
 
@@ -65,39 +65,30 @@ def dominant_hand_penalty(layout: List[str], current_letter: str) -> float:
     return 1 if index_to_pos(layout.index(current_letter))[1] <= 4 else 0
 
 
-def pinky_usage_penalty(layout: List[str], letter: str) -> float:
-    row, col = index_to_pos(layout.index(letter))
-    if row == 1:
-        return 0
-    return 1 if col == 0 or col == 9 else 0
-
-
 def calculate_step(layout: List[str], prev_letter: str, current_letter: str) -> StepPenalty:
     if current_letter == SPACE:
         return StepPenalty.zero()
 
-    travel_distance_p_w = FINGER_TRAVEL_DISTANCE_WEIGHT * finger_travel_distance_penalty(layout, current_letter)
-    dominant_hand_p_w = DOMINANT_HAND_WEIGHT * dominant_hand_penalty(layout, current_letter)
-    pinky_usage_p_w = PINKY_USAGE_WEIGHT * pinky_usage_penalty(layout, current_letter)
+    travel_distance_p_w = (FINGER_TRAVEL_DISTANCE_W / TW) * finger_travel_distance_penalty(layout, current_letter)
+    dominant_hand_p_w = (DOMINANT_HAND_W / TW) * dominant_hand_penalty(layout, current_letter)
 
     if not prev_letter or prev_letter == SPACE:
         return StepPenalty(
             travel_distance_p_w,
             0,
             0,
-            dominant_hand_p_w,
-            pinky_usage_p_w
+            dominant_hand_p_w
         )
 
-    consecutive_finger_p_w = CONSECUTIVE_FINGER_WEIGHT * consecutive_finger_penalty(layout, prev_letter, current_letter)
-    consecutive_hand_p_w = CONSECUTIVE_HAND_WEIGHT * consecutive_hand_penalty(layout, prev_letter, current_letter)
+    consecutive_finger_p_w = (CONSECUTIVE_FINGER_W / TW) * consecutive_finger_penalty(layout, prev_letter,
+                                                                                      current_letter)
+    consecutive_hand_p_w = (CONSECUTIVE_HAND_W / TW) * consecutive_hand_penalty(layout, prev_letter, current_letter)
 
     return StepPenalty(
         travel_distance_p_w,
         consecutive_finger_p_w,
         consecutive_hand_p_w,
-        dominant_hand_p_w,
-        pinky_usage_p_w
+        dominant_hand_p_w
     )
 
 
