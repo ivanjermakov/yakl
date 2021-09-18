@@ -2,6 +2,8 @@ import csv
 import functools
 from collections import Counter
 
+from Bigram import Bigram
+
 TEXT_PATH = 'sample/sample.txt'
 BIGRAM_PATH = 'sample/bigrams.csv'
 
@@ -11,13 +13,17 @@ def load_text() -> str:
         return text.read()
 
 
-def load_bigram_frequency() -> list[tuple[str, float]]:
+def load_bigram_frequency() -> list[Bigram]:
+    """
+
+    :rtype: object
+    """
     bigrams = []
     with open(BIGRAM_PATH) as csv_file:
         for i, row in enumerate(csv.reader(csv_file)):
             if i == 0: continue
-            bigrams.append((row[0] + row[1], float(row[2])))
-    return bigrams[1:]
+            bigrams.append(Bigram(row[0], row[1], float(row[2])))
+    return bigrams
 
 
 def count_letter_frequency(text: str) -> list:

@@ -1,10 +1,11 @@
 from matplotlib import pyplot as plt
 
 import text as t
-from efficiency import calculate
+from penalty import calculate
 from layouts import *
 
 layouts = {
+    "generated": generated,
     "halmak": halmak,
     "qgmlwy": qgmlwy,
     "dvorak": dvorak,

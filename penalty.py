@@ -1,5 +1,9 @@
 from typing import List
 
+from Bigram import Bigram
+from StepPenalty import StepPenalty
+from TextPenaly import TotalPenalty
+
 SPACE = ' '
 
 FINGER_TRAVEL_DISTANCE_WEIGHT = .4
@@ -21,61 +25,6 @@ FINGER_MAP: List[int] = [
     1, 2, 3, 4, 4, 5, 5, 6, 7, 8,
     1, 2, 3, 4, 4, 5, 5, 6, 7, 8,
 ]
-
-
-class StepPenalty:
-    distance: float
-    finger: float
-    keys: float
-    hand: float
-    pinky: float
-
-    def __init__(self, distance: float, finger: float, keys: float, hand: float, pinky: float) -> None:
-        self.distance = distance
-        self.finger = finger
-        self.keys = keys
-        self.hand = hand
-        self.pinky = pinky
-
-    @classmethod
-    def zero(cls):
-        return StepPenalty(0, 0, 0, 0, 0)
-
-
-class TextPenalty:
-    distance: float
-    finger: float
-    keys: float
-    hand: float
-    pinky: float
-
-    def __init__(self, stepPenalties: List[StepPenalty]) -> None:
-        self.distance = sum(map(lambda s: s.distance, stepPenalties)) / len(stepPenalties)
-        self.finger = sum(map(lambda s: s.finger, stepPenalties)) / len(stepPenalties)
-        self.keys = sum(map(lambda s: s.keys, stepPenalties)) / len(stepPenalties)
-        self.hand = sum(map(lambda s: s.hand, stepPenalties)) / len(stepPenalties)
-        self.pinky = sum(map(lambda s: s.pinky, stepPenalties)) / len(stepPenalties)
-
-    def __repr__(self) -> str:
-        return f'[' \
-               f'\n\tdistance: {self.distance}' \
-               f'\n\tfinger: {self.finger}' \
-               f'\n\tkeys: {self.keys}' \
-               f'\n\thand: {self.hand}' \
-               f'\n\tpinky: {self.pinky}' \
-               f'\n]'
-
-    def as_list(self) -> List[float]:
-        return [
-            self.distance,
-            self.finger,
-            self.keys,
-            self.hand,
-            self.pinky
-        ]
-
-    def sum(self) -> float:
-        return sum(self.as_list())
 
 
 def index_to_pos(index: int) -> (int, int):
@@ -152,7 +101,7 @@ def calculate_step(layout: List[str], prev_letter: str, current_letter: str) -> 
     )
 
 
-def calculate(layout: List[str], text: str) -> TextPenalty:
+def calculate(layout: List[str], text: str) -> TotalPenalty:
     step_penalties: List[StepPenalty] = []
     for i in range(len(text)):
         step_penalties.append(
@@ -161,4 +110,11 @@ def calculate(layout: List[str], text: str) -> TextPenalty:
                 None if i == 0 else text[i - 1], text[i]
             )
         )
-    return TextPenalty(step_penalties)
+    return TotalPenalty(step_penalties)
+
+
+def calculate_bigrams(layout: List[str], bigrams: List[Bigram]) -> TotalPenalty:
+    step_penalties: List[StepPenalty] = []
+    for bigram in bigrams:
+        step_penalties.append(calculate_step(layout, bigram.first, bigram.next).mult(bigram.probability * 100))
+    return TotalPenalty(step_penalties)

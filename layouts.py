@@ -57,3 +57,5 @@ qgmlwy = [
     'd', 's', 't', 'n', 'r', 'i', 'a', 'e', 'o', 'h',
     'z', 'x', 'c', 'v', 'j', 'k', 'p', ',', '.', '/'
 ]
+
+generated = list('bmcsqjuda,hnrlwyeito/fpvzx.gk;')
